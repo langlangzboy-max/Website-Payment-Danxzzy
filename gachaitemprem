@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gacha System Modern</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #4ecdc4;
+            --accent: #ffd166;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --darkest: #0f3460;
+            --light: #f7f7f7;
+            --gray: #a0aec0;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 50%, var(--darkest) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: rgba(16, 23, 41, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--light);
+        }
+
+        .luck-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .luck-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .luck-fill.low {
+            background: var(--primary);
+            width: 30%;
+        }
+
+        .luck-fill.medium {
+            background: var(--accent);
+            width: 60%;
+        }
+
+        .luck-fill.high {
+            background: var(--secondary);
+            width: 90%;
+        }
+
+        .gacha-container {
+            background: rgba(16, 23, 41, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gacha-display {
+            position: relative;
+            height: 300px;
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .gacha-item {
+            font-size: 5rem;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.5s ease;
+            position: absolute;
+        }
+
+        .gacha-item.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .gacha-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .gacha-btn {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gacha-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .gacha-btn:disabled {
+            background: #4a5568;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .counter {
+            text-align: center;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: var(--gray);
+        }
+
+        .counter span {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .prizes-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--accent);
+        }
+
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .prize-card {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prize-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+        }
+
+        .prize-card:hover {
+            transform: translateY(-5px);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .prize-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .prize-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .prize-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent);
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .prize-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .social-section {
+            margin-top: 40px;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .social-card {
+            background: rgba(16, 23, 41, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .social-card:hover {
+            transform: translateY(-5px);
+            background: rgba(16, 23, 41, 0.9);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .social-card.tiktok .social-icon {
+            color: #ff0050;
+        }
+
+        .social-card.telegram .social-icon {
+            color: #0088cc;
+        }
+
+        .social-card.youtube .social-icon {
+            color: #ff0000;
+        }
+
+        .social-card.whatsapp .social-icon {
+            color: #25d366;
+        }
+
+        .social-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .social-link {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .password-content {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .password-content h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .password-btn {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .password-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: #2d3748;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(150%);
+            transition: transform 0.5s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #e53e3e;
+        }
+
+        .notification.success {
+            background: #38a169;
+        }
+
+        .video-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            opacity: 0;
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                flex-direction: column;
+            }
+            
+            .gacha-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .gacha-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .prizes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .social-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="logo">GACHA SYSTEM</h1>
+            <p class="subtitle">Dapatkan hadiah menarik dengan sistem gacha modern!</p>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Hadiah yang Didapat</h3>
+                <div class="stat-value" id="prizesWon">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Tingkat Kesialan</h3>
+                <div class="stat-value" id="badLuckLevel">0%</div>
+                <div class="luck-bar">
+                    <div class="luck-fill low" id="badLuckBar"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Tingkat Keberuntungan</h3>
+                <div class="stat-value" id="goodLuckLevel">0%</div>
+                <div class="luck-bar">
+                    <div class="luck-fill low" id="goodLuckBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="gacha-container">
+            <div class="gacha-display" id="gachaDisplay">
+                <div class="gacha-item" id="gachaItem">?</div>
+            </div>
+            
+            <div class="counter">
+                Kesempatan gacha hari ini: <span id="gachaCount">10</span>/10
+            </div>
+            
+            <div class="gacha-controls">
+                <button class="gacha-btn" id="singleGacha">
+                    <i class="fas fa-dice"></i> Gacha 1x
+                </button>
+                <button class="gacha-btn" id="multiGacha" disabled>
+                    <i class="fas fa-dice-d20"></i> Gacha 10x
+                </button>
+            </div>
+        </div>
+
+        <div class="prizes-section">
+            <h2 class="section-title">Hadiah Gacha</h2>
+            <div class="prizes-grid" id="prizesGrid">
+                <!-- Hadiah akan dimuat melalui JavaScript -->
+            </div>
+        </div>
+
+        <div class="social-section">
+            <h2 class="section-title">Ikuti Kami</h2>
+            <div class="social-grid">
+                <div class="social-card tiktok">
+                    <div class="social-icon">
+                        <i class="fab fa-tiktok"></i>
+                    </div>
+                    <h3>TikTok</h3>
+                    <p>Ikuti kami di TikTok untuk konten terbaru</p>
+                    <a href="https://www.tiktok.com/@dnxzvuck?_t=ZS-90flaEqhIfZ&_r=1" class="social-link" target="_blank">Follow</a>
+                </div>
+                <div class="social-card telegram">
+                    <div class="social-icon">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <h3>Telegram</h3>
+                    <p>Bergabung dengan channel Telegram kami</p>
+                    <a href="https://t.me/danxzzy" class="social-link" target="_blank">Join</a>
+                </div>
+                <div class="social-card youtube">
+                    <div class="social-icon">
+                        <i class="fab fa-youtube"></i>
+                    </div>
+                    <h3>YouTube</h3>
+                    <p>Tonton video tutorial dan panduan</p>
+                    <a href="https://youtu.be/vNOuEp8Lnro?si=aZ9XPQQnRKDizFNi" class="social-link" target="_blank">Subscribe</a>
+                </div>
+                <div class="social-card whatsapp">
+                    <div class="social-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h3>WhatsApp Channel</h3>
+                    <p>Ikuti channel WhatsApp untuk update</p>
+                    <a href="https://whatsapp.com/channel/0029VbAl22O3mFY4piSlr742" class="social-link" target="_blank">Follow</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="video-section">
+            <h2 class="section-title">Tonton Video untuk Mengetahui Password</h2>
+            <p style="margin-bottom: 15px; color: var(--gray);">(Password ada di menit 3.42-4.35)</p>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/vNOuEp8Lnro" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div class="password-modal" id="passwordModal">
+        <div class="password-content">
+            <h2>Masukkan Password</h2>
+            <p style="margin-bottom: 15px; color: var(--gray);">Untuk membuka hadiah, masukkan password yang benar</p>
+            <input type="password" class="password-input" id="passwordInput" placeholder="Masukkan password...">
+            <button class="password-btn" id="submitPassword">Submit</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <div class="footer">
+        <p>Gacha System &copy; 2023 - Kesempatan gacha akan direset setiap jam 00:00</p>
+    </div>
+
+    <script>
+        // Data hadiah gacha
+        const prizes = [
+            { name: "APK SADAP V1", url: "https://www.mediafire.com/file/hopt0gz198z9f53/sadap.apk/file", type: "apk" },
+            { name: "APK DDOS", url: "https://www.mediafire.com/file/8c2jvnxexkal3h9/base.apk/file", type: "apk" },
+            { name: "SC GACHA VIA TELE", url: "https://www.mediafire.com/file/61o2fw36a6tvx0d/ANGKA_GACHA.zip/file", type: "script" },
+            { name: "APK RANSOMWARE", url: "https://www.mediafire.com/file/3ctc0rluwxxelv7/apk+ransomware.apk/file", type: "apk" },
+            { name: "APK SADAP V2", url: "https://www.mediafire.com/file/xc5hdqycyly8ygm/apk+sadap.apk/file", type: "apk" },
+            { name: "SC APOLLO CURSED", url: "https://www.mediafire.com/file/xi87ohqy8fc01g0/Apollo+Cursed+V8.0.zip/file", type: "script" },
+            { name: "SC BALDWIN V6", url: "https://www.mediafire.com/file/1b3dv6548u5wadh/BALDWIN_V6_[NO_ENC_VIP].zip/file", type: "script" },
+            { name: "BASE BUG (BER DB)", url: "https://www.mediafire.com/file/czq293apbdgm9n3/BASE_BUG_BERDB.zip/file", type: "base" },
+            { name: "BASE BUG WA", url: "https://www.mediafire.com/file/3g73vbqzbdk7v52/base_bug_wa.zip/file", type: "base" },
+            { name: "BASE NIGHT RAD", url: "https://www.mediafire.com/file/17ldhb0j4zkdo2p/BASE_NIGHT_RAD_VIA_DC.zip/file", type: "base" },
+            { name: "BLANK UI", url: "https://www.mediafire.com/file/34x5ar81jjua2m8/Blank+Ui.js/file", type: "ui" },
+            { name: "CASE COLONG SENDER", url: "https://www.mediafire.com/file/9rc9mxtrt05r538/CASE_COLONG_SENDER_V2.txt/file", type: "case" },
+            { name: "DAGET", url: "https://www.mediafire.com/file/b6t6r7gjhfgbmtg/DAGETT_BOY.txt/file", type: "script" },
+            { name: "FAKE CALL WHATSAPP", url: "https://www.mediafire.com/file/fn5vqv80zv7emhv/fakecallwhatsapp.html/file", type: "fake" },
+            { name: "FCxDELAY", url: "https://www.mediafire.com/file/f7ezw213lpm29wf/fcXDelay.js/file", type: "script" },
+            { name: "FILE BADAK WA V2", url: "https://www.mediafire.com/file/d27c3ywlc8rqpky/FILE_BADAK_V2.zip/file", type: "file" },
+            { name: "FILE BADAK WA V1", url: "https://www.mediafire.com/file/6b85q0hqrc0r82d/FILE_BADAK_WA.zip/file", type: "file" },
+            { name: "FF KIPAS V1", url: "https://www.mediafire.com/file/mr4e3myngwsyncn/Free+Fire+Kipas.apk/file", type: "apk" },
+            { name: "FF KIPAS V2", url: "https://www.mediafire.com/file/0z8dq14tein1l5h/Free+Fire+Kipas+V2.apk/file", type: "apk" },
+            { name: "SC JUSTIN V17 GEN2", url: "https://www.mediafire.com/file/usqba30ct2qib7h/JUSTIN+V17+GEN2+VIP.zip/file", type: "script" },
+            { name: "FUNC NEW", url: "https://www.mediafire.com/file/epopihbih03uytg/KUMPULAN_FUNCTION_NEW_(_Fazz_).zip/file", type: "func" },
+            { name: "NINJA RYOKU", url: "https://www.mediafire.com/file/hhzmm324oikefff/Ninja+Ryoku+Mod+V1.zip/file", type: "mod" },
+            { name: "REPO VIP", url: "https://www.mediafire.com/file/ox3qizewf7qoxg4/Repo_155_Module_VIP_Wafa_(1)_(1).zip/file", type: "repo" },
+            { name: "MAKAN SAYANGG", url: "https://www.mediafire.com/file/cz8uur0r4m0ij2g/SAYANG+MAKAN+SAYANG.zip/file", type: "script" },
+            { name: "SC BUG DEATH VIP", url: "https://www.mediafire.com/file/8cyr8oj7l8f2ifr/SC+BUG+DEATH+V4+VVIP.zip/file", type: "script" },
+            { name: "SC RIMRU MD", url: "https://www.mediafire.com/file/x1pambxa5vlh0l8/SC+RIMRU+MD.zip/file", type: "script" },
+            { name: "SC ELAINA MD", url: "https://www.mediafire.com/file/30tk25bnu16uuf2/ScripBotElainaMD.zip/file", type: "script" },
+            { name: "SC BUG VIA TELE", url: "https://www.mediafire.com/file/hwinlffiy2dicgm/SCRIPT_BUG_VIA_TELE.zip/file", type: "script" },
+            { name: "SC BYPAS VIA TELE", url: "https://www.mediafire.com/file/m289ah9ua8bd2jy/SCRIPT_BYPAS_TELE.zip/file", type: "script" },
+            { name: "CAMERA HACK", url: "https://www.mediafire.com/file/bhl7tbldc4dld2j/Seeu+(+Camera_Hacking+).txt/file", type: "hack" },
+            { name: "SOCIAL HACK", url: "https://www.mediafire.com/file/mlwi8rc6oym1rct/social_hack.txt/file", type: "hack" },
+            { name: "SOCIAL SPLOIT", url: "https://www.mediafire.com/file/y4mizwqsarummmo/SOCIAL_SPLOIT.txt/file", type: "sploit" },
+            { name: "SC DDOS VIA TELE", url: "https://www.mediafire.com/file/p7sji6a4snq67l5/TELE-DDOS-BY-BAGUS.zip/file", type: "script" },
+            { name: "MT UNBANED PERMA", url: "https://www.mediafire.com/file/s744gu60ruxv116/text+unband+perma.txt/file", type: "mt" },
+            { name: "TOOLS V1", url: "https://www.mediafire.com/file/0o73pu8dm9ewjcl/Tools.zip/file", type: "tools" },
+            { name: "TRAZ BASE", url: "https://www.mediafire.com/file/58msynm2oxoirkb/TRAZ_2.7_[BASE].zip.zip/file", type: "base" },
+            { name: "SC UBOT TELE", url: "https://www.mediafire.com/file/aqdgo81e3yf9inj/ubot_by_pian.zip/file", type: "script" },
+            { name: "WIFI PHISHER", url: "https://www.mediafire.com/file/ltw0rcc539d57ph/WIFI_PHISHER+(+-_-+)+(+NOT_FOR_KIDS+).txt/file", type: "phisher" },
+            { name: "SC X-ANGLEXxINVITUS", url: "https://www.mediafire.com/file/1cqn952dtpp44iv/X-ANGLE_INVITUS.zip/file", type: "script" },
+            { name: "SC XSTROM", url: "https://www.mediafire.com/file/7k65ef4m3bysnzu/XStromXCallV2.js/file", type: "script" },
+            { name: "SC MIKASAxCRASH", url: "https://www.mediafire.com/file/t5ddsl18xc5f4m8/ZallXMikasaCrash.zip/file", type: "script" },
+            { name: "SC RII EXECUTE", url: "https://www.mediafire.com/file/1wiokbz709zofg4/𝕽𝖎𝖎𝕰𝖝𝖊𝖈𝖚𝖙𝖊+6.0+KING+ENC.zip/file", type: "script" },
+            { name: "PAIMON", url: "https://www.mediafire.com/file/hhup3fb4adb3pkp/𝗉ɑⅰ𝗆ⲟn+v10.zip/file", type: "script" },
+            { name: "SC BUG GACORRRR", url: "https://www.mediafire.com/file/jgyvagzmlkev1i5/🎭⃟༑⌁⭚𝗛͍𝗮𝗱𝗲͢𝐬_𝙓𝙫͋𝙡𝙤𝙞𝙙ཀ͜͡🌹_V1_5_No_enc.zip/file", type: "script" }
+        ];
+
+        // Variabel global
+        let gachaCount = 10;
+        let prizesWon = 0;
+        let totalGacha = 0;
+        let currentPrize = null;
+        const correctPassword = "SubscribeDanxzzy";
+
+        // Elemen DOM
+        const gachaDisplay = document.getElementById('gachaDisplay');
+        const gachaItem = document.getElementById('gachaItem');
+        const gachaCountElement = document.getElementById('gachaCount');
+        const singleGachaBtn = document.getElementById('singleGacha');
+        const multiGachaBtn = document.getElementById('multiGacha');
+        const prizesGrid = document.getElementById('prizesGrid');
+        const passwordModal = document.getElementById('passwordModal');
+        const passwordInput = document.getElementById('passwordInput');
+        const submitPasswordBtn = document.getElementById('submitPassword');
+        const notification = document.getElementById('notification');
+        const prizesWonElement = document.getElementById('prizesWon');
+        const badLuckLevelElement = document.getElementById('badLuckLevel');
+        const goodLuckLevelElement = document.getElementById('goodLuckLevel');
+        const badLuckBar = document.getElementById('badLuckBar');
+        const goodLuckBar = document.getElementById('goodLuckBar');
+
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', function() {
+            updateGachaCount();
+            renderPrizes();
+            updateStats();
+            
+            // Event listeners
+            singleGachaBtn.addEventListener('click', performSingleGacha);
+            submitPasswordBtn.addEventListener('click', checkPassword);
+            
+            // Cek apakah sudah melebihi batas gacha hari ini
+            checkGachaLimit();
+        });
+
+        // Render daftar hadiah
+        function renderPrizes() {
+            prizesGrid.innerHTML = '';
+            
+            prizes.forEach(prize => {
+                const prizeCard = document.createElement('div');
+                prizeCard.className = 'prize-card';
+                prizeCard.innerHTML = `
+                    <h3>${prize.name}</h3>
+                    <p>Klik untuk membuka hadiah ini</p>
+                    <a href="#" class="prize-link" data-url="${prize.url}">Buka Hadiah</a>
+                `;
+                
+                prizeCard.querySelector('.prize-link').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentPrize = prize;
+                    showPasswordModal();
+                });
+                
+                prizesGrid.appendChild(prizeCard);
+            });
+        }
+
+        // Update tampilan jumlah gacha
+        function updateGachaCount() {
+            gachaCountElement.textContent = gachaCount;
+            
+            if (gachaCount <= 0) {
+                singleGachaBtn.disabled = true;
+                multiGachaBtn.disabled = true;
+            } else {
+                singleGachaBtn.disabled = false;
+            }
+        }
+
+        // Update statistik
+        function updateStats() {
+            prizesWonElement.textContent = prizesWon;
+            
+            // Hitung tingkat keberuntungan dan kesialan
+            const badLuckPercentage = totalGacha > 0 ? Math.round((totalGacha - prizesWon) / totalGacha * 100) : 0;
+            const goodLuckPercentage = totalGacha > 0 ? Math.round(prizesWon / totalGacha * 100) : 0;
+            
+            badLuckLevelElement.textContent = `${badLuckPercentage}%`;
+            goodLuckLevelElement.textContent = `${goodLuckPercentage}%`;
+            
+            // Update bar
+            badLuckBar.style.width = `${badLuckPercentage}%`;
+            goodLuckBar.style.width = `${goodLuckPercentage}%`;
+            
+            // Update kelas untuk warna
+            badLuckBar.className = 'luck-fill';
+            goodLuckBar.className = 'luck-fill';
+            
+            if (badLuckPercentage < 40) {
+                badLuckBar.classList.add('low');
+            } else if (badLuckPercentage < 70) {
+                badLuckBar.classList.add('medium');
+            } else {
+                badLuckBar.classList.add('high');
+            }
+            
+            if (goodLuckPercentage < 40) {
+                goodLuckBar.classList.add('low');
+            } else if (goodLuckPercentage < 70) {
+                goodLuckBar.classList.add('medium');
+            } else {
+                goodLuckBar.classList.add('high');
+            }
+        }
+
+        // Lakukan gacha sekali
+        function performSingleGacha() {
+            if (gachaCount <= 0) {
+                showNotification("Kesempatan gacha hari ini sudah habis! Tunggu hingga jam 00:00 untuk reset.", "error");
+                return;
+            }
+            
+            // Animasi gacha
+            gachaItem.textContent = "?";
+            gachaItem.classList.remove('show');
+            
+            setTimeout(() => {
+                // 50% kemungkinan zonk, 50% kemungkinan dapat hadiah
+                const isZonk = Math.random() < 0.5;
+                
+                if (isZonk) {
+                    gachaItem.textContent = "ZONK";
+                    gachaItem.style.color = "#ff6b6b";
+                    showNotification("Anda mendapatkan ZONK! Coba lagi.", "error");
+                } else {
+                    const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
+                    gachaItem.textContent = "HADIAH!";
+                    gachaItem.style.color = "#4ade80";
+                    showNotification(`Selamat! Anda mendapatkan ${randomPrize.name}`, "success");
+                    createConfetti();
+                    
+                    // Update statistik
+                    prizesWon++;
+                    
+                    // Tampilkan modal password untuk hadiah
+                    currentPrize = randomPrize;
+                    setTimeout(() => {
+                        showPasswordModal();
+                    }, 1500);
+                }
+                
+                gachaItem.classList.add('show');
+                
+                // Kurangi jumlah gacha dan update statistik
+                gachaCount--;
+                totalGacha++;
+                updateGachaCount();
+                updateStats();
+                saveGachaData();
+            }, 1000);
+        }
+
+        // Tampilkan modal password
+        function showPasswordModal() {
+            passwordModal.style.display = 'flex';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+
+        // Tutup modal password
+        function closePasswordModal() {
+            passwordModal.style.display = 'none';
+        }
+
+        // Cek password
+        function checkPassword() {
+            const enteredPassword = passwordInput.value.trim();
+            
+            if (enteredPassword === correctPassword) {
+                showNotification("Password benar! Mengarahkan ke hadiah...", "success");
+                closePasswordModal();
+                
+                // Redirect ke URL hadiah setelah delay
+                setTimeout(() => {
+                    window.open(currentPrize.url, '_blank');
+                }, 1500);
+            } else {
+                showNotification("Password salah! Coba lagi.", "error");
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+
+        // Tampilkan notifikasi
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Buat efek confetti
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#ffa36c', '#ffde7d', '#4ade80', '#38bdf8', '#a78bfa'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `confetti ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // Simpan data gacha ke localStorage
+        function saveGachaData() {
+            const today = new Date().toDateString();
+            const gachaData = {
+                date: today,
+                count: gachaCount,
+                prizesWon: prizesWon,
+                totalGacha: totalGacha
+            };
+            
+            localStorage.setItem('gachaData', JSON.stringify(gachaData));
+        }
+
+        // Cek batas gacha
+        function checkGachaLimit() {
+            const today = new Date().toDateString();
+            const savedData = localStorage.getItem('gachaData');
+            
+            if (savedData) {
+                const gachaData = JSON.parse(savedData);
+                
+                // Jika data dari hari yang sama, gunakan count yang tersisa
+                if (gachaData.date === today) {
+                    gachaCount = gachaData.count;
+                    prizesWon = gachaData.prizesWon || 0;
+                    totalGacha = gachaData.totalGacha || 0;
+                    updateGachaCount();
+                    updateStats();
+                } else {
+                    // Jika hari baru, reset count
+                    gachaCount = 10;
+                    prizesWon = 0;
+                    totalGacha = 0;
+                    updateGachaCount();
+                    updateStats();
+                    saveGachaData();
+                }
+            }
+        }
+
+        // Event listener untuk menutup modal dengan ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePasswordModal();
+            }
+        });
+
+        // Event listener untuk menutup modal dengan klik di luar
+        passwordModal.addEventListener('click', function(e) {
+            if (e.target === passwordModal) {
+                closePasswordModal();
+            }
+        });
+    </script>
+</body>
+</html>
